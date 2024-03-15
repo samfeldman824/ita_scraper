@@ -181,19 +181,40 @@ for match in match_divs:
         
         if "tieMatchUp_winner__2EtgR" in player.get_attribute("class").split():
             result = "Won"
-            
-        name = player.find_element(By.CLASS_NAME, 'tieMatchUp_name__1lTsZ')
         
+        original_window = driver.current_window_handle 
+        
+        name = player.find_element(By.CLASS_NAME, 'tieMatchUp_name__1lTsZ')
+       
+        full_names = [] 
+       
+        name_links = name.find_elements(By.TAG_NAME, "a")
+        
+        
+        for link in name_links:
+            name_link = link.get_attribute("href")
+            driver.execute_script("window.open('');")
+            driver.switch_to.window(driver.window_handles[-1])
+            driver.get(name_link)
+            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'teamBanner_playerName__2PcjI'))) 
+            full_name = driver.find_element(By.CLASS_NAME, 'teamBanner_playerName__2PcjI').text
+            full_names.append(full_name)
+            # print(f"Full Name: {full_name}")
+            driver.close()
+            driver.switch_to.window(original_window)
+     
             
-            
+        # driver.back()
+        # driver.get(url)
+        
             
         if result == "Won":
             if type == "Doubles":
-                pair_names = name.text.split(" /")
-                winner_name = pair_names[0]
-                winner_partner_name = pair_names[1]
+                # pair_names = name.text.split(" /")
+                winner_name = full_names[0]
+                winner_partner_name = full_names[1]
             else:   
-                winner_name = name.text
+                winner_name = full_names[0] 
                 
             if idx == 0:
                 winner_college = clip_school(away_team_name)
@@ -202,11 +223,11 @@ for match in match_divs:
                 
         if result == "Lost":
             if type == "Doubles":
-                pair_names = name.text.split(" /")
-                loser_name = pair_names[0]
-                loser_partner_name = pair_names[1]
+                # pair_names = name.text.split(" /")
+                loser_name = full_names[0]
+                loser_partner_name = full_names[1]
             else:   
-                loser_name = name.text
+                loser_name = full_names[0]
 
             if idx == 0:
                 loser_college = clip_school(away_team_name)
@@ -216,6 +237,9 @@ for match in match_divs:
         
         # 
         # tieMatchUp_winnerIcon__CTmd5
+        wait.until(
+            EC.presence_of_all_elements_located((By.CLASS_NAME, 'tieMatchUp_score__2WkUA'))
+        )
         score = player.find_elements(By.CLASS_NAME, 'tieMatchUp_score__2WkUA')
         games_score = ''
         for s in score:
@@ -251,7 +275,7 @@ for match in match_divs:
             
             
             games_score += set_score + " "
-        print(name.text, games_score, result)
+        # print(name.text, games_score, result)
         
     match_score = ""
     for i in range(len(winning_player_score)):
