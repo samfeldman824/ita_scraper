@@ -181,10 +181,31 @@ for match in match_divs:
     for idx in range(2):
     
         player = players[idx]
+
+    # tieMatchUp_flag__4biXR UF
+    # tieMatchUp_winnerIcon__CTmd5 WIN
+    # tieMatchUp_flag__4biXR RET
+        
         result = "Lost"
         
-        if "tieMatchUp_winner__2EtgR" in player.get_attribute("class").split():
-            result = "Won"
+            
+        player_divs = player.find_elements(By.TAG_NAME, 'div')
+            
+        for player_div in player_divs:
+            classes = player_div.get_attribute("class").split()
+
+            if "tieMatchUp_flag__4biXR" in classes:
+                result = "Unfinished"
+            if "tieMatchUp_winnerIcon__CTmd5" in classes:
+                result = "Won"
+            if "tieMatchUp_flag__4biXR" in classes:
+                result = "Retired"
+         
+        
+        # result = "Lost"
+        
+        # if "tieMatchUp_winner__2EtgR" in player.get_attribute("class").split():
+        #     result = "Won"
         
         original_window = driver.current_window_handle 
         
@@ -287,17 +308,19 @@ for match in match_divs:
         # print(name.text, games_score, result)
         
     match_score = ""
-    for i in range(len(winning_player_score)):
-        
-        if winning_player_score[i][0] == "7" and len(winning_player_score[i]) != 1:
-            match_score += winning_player_score[i][0] + "-" + losing_player_score[i] + ", "
-        elif losing_player_score[i][0] == "7" and len(losing_player_score[i]) != 1:
-            match_score += winning_player_score[i][0] + "-" + losing_player_score[i][0] + winning_player_score[i][1:] + ", " 
-        else:
-            match_score += winning_player_score[i] + "-" + losing_player_score[i] + ", "
-        
-    match_score = match_score[:len(match_score) - 2] 
-        
+    
+    if len(winning_player_score) != 0:
+        for i in range(len(winning_player_score)):
+            
+            if winning_player_score[i][0] == "7" and len(winning_player_score[i]) != 1:
+                match_score += winning_player_score[i][0] + "-" + losing_player_score[i] + ", "
+            elif losing_player_score[i][0] == "7" and len(losing_player_score[i]) != 1:
+                match_score += winning_player_score[i][0] + "-" + losing_player_score[i][0] + winning_player_score[i][1:] + ", " 
+            else:
+                match_score += winning_player_score[i] + "-" + losing_player_score[i] + ", "
+            
+        match_score = match_score[:len(match_score) - 2] 
+
     row_data = {
             "Date(mm/dd/yyyy)": formatted_date,
             "Gender": gender,
