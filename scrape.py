@@ -6,6 +6,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
 import pandas as pd
+import time as time
+
+start = time.time()
 
 def team_score():
     away_score = (wait.until(
@@ -203,11 +206,15 @@ def scrape_box_score(url: str):
                 classes = player_div.get_attribute("class").split()
 
                 if "tieMatchUp_flag__4biXR" in classes:
-                    result = "Unfinished"
+                    flag_type = player_div.find_element(By.TAG_NAME, "abbr").text
+                    if flag_type == "W/O":
+                        result = "Walkover"
+                    if flag_type == "DEF":
+                        result = "Default"
                 if "tieMatchUp_winnerIcon__CTmd5" in classes:
                     result = "Won"
-                if "tieMatchUp_flag__4biXR" in classes:
-                    result = "Retired"
+                # if "tieMatchUp_flag__4biXR" in classes:
+                #     result = ""
             
             valid_match.append(result)
             # result = "Lost"
@@ -399,17 +406,25 @@ test_links = [
 ]
 
 main_df = pd.DataFrame()
+count = 0
+for link in links:
+    # print(link)
+    df = scrape_box_score(link)
+    main_df = pd.concat([main_df, df], ignore_index=True)
+    print(f"Scraped {count + 1} of {len(links)}")
+    count += 1
+main_df.to_excel('output.xlsx', index=False)
 
-# for link in links:
-#     # print(link)
-#     df = scrape_box_score(link)
-#     main_df = pd.concat([main_df, df], ignore_index=True)
-# main_df.to_excel('output.xlsx', index=False)
-url = 'https://colleges.wearecollegetennis.com/PrincetonUniversityM/Team/scorecard/F0EB1E20-0E19-4614-A2BF-BDB8591159A0'
-df = scrape_box_score(url)
-df.to_excel('output.xlsx', index=False)
+# url = 'https://colleges.wearecollegetennis.com/PrincetonUniversityM/Team/scorecard/F0EB1E20-0E19-4614-A2BF-BDB8591159A0'
+# url = 'https://colleges.wearecollegetennis.com/YaleUniversityM/Team/scorecard/33B765EF-D1DB-49D4-83CD-5349233F7408'
+# url = 'https://colleges.wearecollegetennis.com/UniversityOfCaliforniaSantaBarbaraM/Team/scorecard/6993C9ED-F069-47AF-A5A6-0257042A2813'
+# df = scrape_box_score(url)
+# df.to_excel('output.xlsx', index=False)
 
 
 # input("Press Enter to continue...")
 
 driver.quit()
+
+end = time.time()
+print(f"Time elapsed: {end - start} seconds")
