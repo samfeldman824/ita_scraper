@@ -89,7 +89,9 @@ for button in buttons:
 
 # driver.get(links[0])
 # print(driver.title)
-driver.get('https://colleges.wearecollegetennis.com/ClemsonUniversityM/Team/scorecard/C09CD3FF-7676-4675-944B-973FBAA59F40')
+# driver.get('https://colleges.wearecollegetennis.com/ClemsonUniversityM/Team/scorecard/C09CD3FF-7676-4675-944B-973FBAA59F40')
+# driver.get('https://colleges.wearecollegetennis.com/AlabamaStateUniversityM/Team/scorecard/AF6C7F8D-7026-4D49-9FE1-EF1B5C0D1A37')
+driver.get('https://colleges.wearecollegetennis.com/UniversityOfNebraskaM/Team/scorecard/D998640E-06BC-46BC-A15E-B5D31992C89C')
 # print(driver.title)
 # team_score()
 
@@ -157,6 +159,8 @@ wait.until(
 
 match_divs = driver.find_elements(By.CLASS_NAME, 'tieMatchUp_tieMatchUp__1_Bfm')
 
+cached_names = {}
+
 for match in match_divs:
     info = match.find_element(By.TAG_NAME, "h3").text
     line = info.split(" ")[0]
@@ -191,17 +195,22 @@ for match in match_divs:
         name_links = name.find_elements(By.TAG_NAME, "a")
         
         
+
         for link in name_links:
             name_link = link.get_attribute("href")
-            driver.execute_script("window.open('');")
-            driver.switch_to.window(driver.window_handles[-1])
-            driver.get(name_link)
-            wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'teamBanner_playerName__2PcjI'))) 
-            full_name = driver.find_element(By.CLASS_NAME, 'teamBanner_playerName__2PcjI').text
-            full_names.append(full_name)
-            # print(f"Full Name: {full_name}")
-            driver.close()
-            driver.switch_to.window(original_window)
+            short_name = link.text
+            if short_name in cached_names:
+                full_names.append(cached_names[link.text])
+            else:
+                driver.execute_script("window.open('');")
+                driver.switch_to.window(driver.window_handles[-1])
+                driver.get(name_link)
+                wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'teamBanner_playerName__2PcjI'))) 
+                full_name = driver.find_element(By.CLASS_NAME, 'teamBanner_playerName__2PcjI').text
+                full_names.append(full_name)
+                cached_names[short_name] = full_name
+                driver.close()
+                driver.switch_to.window(original_window)
      
             
         # driver.back()
