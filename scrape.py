@@ -90,8 +90,8 @@ for button in buttons:
 # driver.get(links[0])
 # print(driver.title)
 # driver.get('https://colleges.wearecollegetennis.com/ClemsonUniversityM/Team/scorecard/C09CD3FF-7676-4675-944B-973FBAA59F40')
-# driver.get('https://colleges.wearecollegetennis.com/AlabamaStateUniversityM/Team/scorecard/AF6C7F8D-7026-4D49-9FE1-EF1B5C0D1A37')
-driver.get('https://colleges.wearecollegetennis.com/UniversityOfNebraskaM/Team/scorecard/D998640E-06BC-46BC-A15E-B5D31992C89C')
+driver.get('https://colleges.wearecollegetennis.com/AlabamaStateUniversityM/Team/scorecard/AF6C7F8D-7026-4D49-9FE1-EF1B5C0D1A37')
+# driver.get('https://colleges.wearecollegetennis.com/UniversityOfNebraskaM/Team/scorecard/D998640E-06BC-46BC-A15E-B5D31992C89C')
 # print(driver.title)
 # team_score()
 
@@ -178,6 +178,8 @@ for match in match_divs:
     winning_player_score = []
     losing_player_score = []
     
+    valid_match = []
+     
     for idx in range(2):
     
         player = players[idx]
@@ -201,7 +203,7 @@ for match in match_divs:
             if "tieMatchUp_flag__4biXR" in classes:
                 result = "Retired"
          
-        
+        valid_match.append(result)
         # result = "Lost"
         
         # if "tieMatchUp_winner__2EtgR" in player.get_attribute("class").split():
@@ -320,6 +322,11 @@ for match in match_divs:
                 match_score += winning_player_score[i] + "-" + losing_player_score[i] + ", "
             
         match_score = match_score[:len(match_score) - 2] 
+
+    if valid_match == ["Lost", "Lost"]:
+        loser_college = ""
+        loser_name = ""
+        loser_partner_name = ""
 
     row_data = {
             "Date(mm/dd/yyyy)": formatted_date,
