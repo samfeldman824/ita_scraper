@@ -119,33 +119,8 @@ def get_date(driver):
 
     return formatted_date
 
-def scrape_box_score(url: str):
+def get_teams_and_score(driver):
     
-    driver.get(url)
-
-    excel_data = []
-
-
-    # wait.until(
-    #     EC.presence_of_all_elements_located((By.CLASS_NAME, 'boxDetails_boxDetails__2vQeJ'))
-    # )
-
-    # date_div = driver.find_element(By.CLASS_NAME, 'boxDetails_boxDetails__2vQeJ')
-
-    # date_string = date_div.find_element(By.TAG_NAME, "time").text
-    # date_part = date_string.split(" / ")[0]
-
-    # # Parse the date
-    # date_format = "%b %d (%a), %Y"
-    # parsed_date = datetime.strptime(date_part, date_format)
-
-    # # Format the date into mm/dd/yyyy
-    # formatted_date = parsed_date.strftime("%m/%d/%Y")
-
-    formatted_date = get_date(driver)
-    
-    print(formatted_date)
-
     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'boxDetails_teamName__1OFCB')))
 
     # away boxDetails_teamName__1OFCB 
@@ -185,6 +160,22 @@ def scrape_box_score(url: str):
         gender = "Female" 
     print(f"Gender: {gender}")    
     print()
+    
+    return away_team_name, home_team_name, winning_team, losing_team, winning_score, losing_score, dual_score, gender
+
+
+def scrape_box_score(url: str):
+    
+    driver.get(url)
+
+    excel_data = []
+
+    formatted_date = get_date(driver)
+    
+    print(formatted_date)
+
+    away_team_name, home_team_name, winning_team, losing_team, winning_score, losing_score, dual_score, gender = get_teams_and_score(driver)
+
     wait.until(
         EC.presence_of_all_elements_located((By.CLASS_NAME, 'tieMatchUp_tieMatchUp__1_Bfm'))
     )
