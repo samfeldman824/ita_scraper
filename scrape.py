@@ -31,13 +31,13 @@ def team_score():
 
 def clip_school(school: str):
     return school[:len(school) - 4]
+
+    
 # Replace this with the path to your downloaded ChromeDriver
 chrome_driver_path = '/Users/samfeldman/Downloads/chromedriver-mac-arm64/chromedriver'
 
 # Initialize the WebDriver with the specified path
 service = Service(executable_path=chrome_driver_path)
-
-# Your scraping logic here
 options = webdriver.ChromeOptions()
 driver = webdriver.Chrome(service=service, options=options)
 
@@ -98,12 +98,8 @@ for button in buttons:
 # print(driver.title)
 # team_score()
 
-def scrape_box_score(url: str):
-    
-    driver.get(url)
 
-    excel_data = []
-
+def get_date(driver):
 
     wait.until(
         EC.presence_of_all_elements_located((By.CLASS_NAME, 'boxDetails_boxDetails__2vQeJ'))
@@ -121,6 +117,33 @@ def scrape_box_score(url: str):
     # Format the date into mm/dd/yyyy
     formatted_date = parsed_date.strftime("%m/%d/%Y")
 
+    return formatted_date
+
+def scrape_box_score(url: str):
+    
+    driver.get(url)
+
+    excel_data = []
+
+
+    # wait.until(
+    #     EC.presence_of_all_elements_located((By.CLASS_NAME, 'boxDetails_boxDetails__2vQeJ'))
+    # )
+
+    # date_div = driver.find_element(By.CLASS_NAME, 'boxDetails_boxDetails__2vQeJ')
+
+    # date_string = date_div.find_element(By.TAG_NAME, "time").text
+    # date_part = date_string.split(" / ")[0]
+
+    # # Parse the date
+    # date_format = "%b %d (%a), %Y"
+    # parsed_date = datetime.strptime(date_part, date_format)
+
+    # # Format the date into mm/dd/yyyy
+    # formatted_date = parsed_date.strftime("%m/%d/%Y")
+
+    formatted_date = get_date(driver)
+    
     print(formatted_date)
 
     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'boxDetails_teamName__1OFCB')))
@@ -407,7 +430,7 @@ test_links = [
 
 main_df = pd.DataFrame()
 count = 0
-for link in links:
+for link in test_links:
     # print(link)
     df = scrape_box_score(link)
     main_df = pd.concat([main_df, df], ignore_index=True)
