@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
+import json
 
 def initialize_driver(chrome_driver_path):
     # Initialize the Chrome driver
@@ -149,7 +150,7 @@ def get_button_links(driver):
     
     return links
     
-def scrape_box_score(driver, url: str):
+def scrape_box_score(driver, url: str, saved_names):
     
     wait = WebDriverWait(driver, 10)
     
@@ -170,13 +171,13 @@ def scrape_box_score(driver, url: str):
 
     match_divs = driver.find_elements(By.CLASS_NAME, 'tieMatchUp_tieMatchUp__1_Bfm')
 
-    cached_names = {}
+    cached_names = saved_names
 
     for match in match_divs:
         info = match.find_element(By.TAG_NAME, "h3").text
         line = info.split(" ")[0]
         type = info.split(" ")[1]
-        print(f"{line} {type}")
+        # print(f"{line} {type}")
         
         winner_name = ""
         winner_partner_name = ""
@@ -245,6 +246,7 @@ def scrape_box_score(driver, url: str):
                     driver.get(name_link)
                     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'teamBanner_playerName__2PcjI'))) 
                     full_name = driver.find_element(By.CLASS_NAME, 'teamBanner_playerName__2PcjI').text
+                    full_name = ' '.join(full_name.replace('\n', ' ').split())
                     full_names.append(full_name)
                     cached_names[short_name] = full_name
                     driver.close()
@@ -255,8 +257,8 @@ def scrape_box_score(driver, url: str):
             # driver.get(url)
             
                 
-            if result == "Won":
-                if type == "Doubles":
+            if result == "Won" and len(full_names) != 0:
+                if type == "Doubles" :
                     # pair_names = name.text.split(" /")
                     winner_name = full_names[0]
                     winner_partner_name = full_names[1]
@@ -268,7 +270,7 @@ def scrape_box_score(driver, url: str):
                 else:
                     winner_college = clip_school(home_team_name)
                     
-            if result == "Lost":
+            if result == "Lost" and len(full_names) != 0:
                 if type == "Doubles":
                     # pair_names = name.text.split(" /")
                     loser_name = full_names[0]
@@ -343,6 +345,14 @@ def scrape_box_score(driver, url: str):
             loser_name = ""
             loser_partner_name = ""
 
+        if type == "Doubles" and winner_name != "":
+            print(f" {line} {type}")
+            print(f"{winner_name} & {winner_partner_name} def {loser_name} & {loser_partner_name} {match_score}")
+        if type == "Singles" and winner_name != "":
+            print(f" {line} {type}")
+            print(f"{winner_name} def {loser_name} {match_score}")
+        
+        
         row_data = {
                 "Date(mm/dd/yyyy)": formatted_date,
                 "Gender": gender,
@@ -362,7 +372,9 @@ def scrape_box_score(driver, url: str):
         excel_data.append(row_data)
         print()
 
-
+    saved_names.update(cached_names)
+    # with open('saved_names.json', 'w') as f:
+    #     json.dump(saved_names, f)
 
     # while button_index < len(buttons):
     #     try:
