@@ -18,11 +18,28 @@ def initialize_driver(chrome_driver_path):
     
     return driver
 
-def clip_school(school: str):
+def clip_school(school: str) -> str:
+    """
+    Removes the last 4 characters from the given school name.
+
+    Args:
+        school (str): The name of the school.
+
+    Returns:
+        str: The school name with the last 4 characters removed.
+    """
     return school[:len(school) - 4]
 
-def get_date(driver):
+def get_date(driver: webdriver.Chrome) -> str:
+    """
+    Retrieves the date from ita box score page.
 
+    Args:
+        driver: The WebDriver instance used to interact with the web page.
+
+    Returns:
+        A formatted date string in the format mm/dd/yyyy.
+    """
     WebDriverWait(driver, 10).until(
         EC.presence_of_all_elements_located((By.CLASS_NAME, 'boxDetails_boxDetails__2vQeJ'))
     )
@@ -41,15 +58,31 @@ def get_date(driver):
 
     return formatted_date
 
-def get_teams_and_score(driver):
-    
+def get_teams_and_score(driver: webdriver.Chrome) -> tuple[str, str, str, str, int, int, str, str]:
+    """
+    Retrieves the teams, scores, and gender information from ita box score page.
+
+    Args:
+        driver: The WebDriver instance used to interact with the web page.
+
+    Returns:
+        A tuple containing the following information:
+        - away_team_name: The name of the away team.
+        - home_team_name: The name of the home team.
+        - winning_team: The name of the winning team.
+        - losing_team: The name of the losing team.
+        - winning_score: The score of the winning team.
+        - losing_score: The score of the losing team.
+        - dual_score: The combined score in the format "winning_score-losing_score".
+        - gender: The gender of the teams (either "Male" or "Female").
+
+    """
     wait = WebDriverWait(driver, 10)
     
     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'boxDetails_teamName__1OFCB')))
 
     # away boxDetails_teamName__1OFCB 
     # home boxDetails_team__1OjSB
-
 
     teams = driver.find_elements(By.CLASS_NAME, 'boxDetails_teamName__1OFCB')
 
@@ -87,58 +120,64 @@ def get_teams_and_score(driver):
     
     return away_team_name, home_team_name, winning_team, losing_team, winning_score, losing_score, dual_score, gender
 
-def click_cookie_button(driver):
-    """ Clicks the cookie consent button on the page
+def click_cookie_button(driver: webdriver.Chrome) -> None:
+    """
+    Clicks the cookie button on ita results page.
 
     Args:
-        driver (_type_): _description_
+        driver (webdriver.Chrome): The Selenium WebDriver instance.
+
+    Raises:
+        Exception: If there is an error clicking the cookie button.
+
+    Returns:
+        None
     """
-    
     try:
         cookie_button = WebDriverWait(driver, 5).until(
             EC.element_to_be_clickable((By.CLASS_NAME, "cb-enable"))
         )
         cookie_button.click()
         print("clicked cookie button")
-        # Wait a brief moment for the cookie consent to process the dismissal
         WebDriverWait(driver, 5).until(EC.invisibility_of_element(cookie_button))
     except Exception as e:
         print(f"Error clicking cookie button: {e}")
 
-def click_load_more(driver, num_clicks: int):
-    """ Clicks the "Load More" button on the page
-
-    Args:
-        driver (_type_): _description_
-        num_clicks (_type_): _description_
+def click_load_more(driver: webdriver.Chrome, num_clicks: int) -> None:
     """
+    Clicks the 'Load More' button on a webpage a specified number of times.
     
+    Args:
+        driver (webdriver.Chrome): The Chrome webdriver instance.
+        num_clicks (int): The number of times to click the 'Load More' button.
+    
+    Returns:
+        None 
+    """
     for i in range(num_clicks):
-    
         try:
             wait_time = 10
             load_more_button = WebDriverWait(driver, wait_time).until(
-            EC.presence_of_element_located((By.XPATH, "//button[@data-testid='PDM-loadMore-onLoadMoreButton']")))
-            WebDriverWait(driver, wait_time).until(EC.element_to_be_clickable((By.XPATH, "//button[@data-testid='PDM-loadMore-onLoadMoreButton']"))
-            )
+                EC.presence_of_element_located((By.XPATH, "//button[@data-testid='PDM-loadMore-onLoadMoreButton']")))
+            WebDriverWait(driver, wait_time).until(
+                EC.element_to_be_clickable((By.XPATH, "//button[@data-testid='PDM-loadMore-onLoadMoreButton']")))
             
             ActionChains(driver).move_to_element(load_more_button).perform()
-            # print('reached')
             load_more_button.click()
             print(f"Clicked load more button {i + 1} times") 
             
         except Exception as e:
-            # print(f"Error clicking button: {e}")
             print("done loading")
 
-def get_button_links(driver):
-    """ Stores the links of the buttons on the page
+def get_button_links(driver: webdriver.Chrome) -> list[str]:
+    """
+    Retrieves the URLs of buttons to box scores on the webpage.
 
     Args:
-        driver (_type_): _description_
+        driver (webdriver.Chrome): The Chrome WebDriver instance.
 
     Returns:
-        _type_: _description_
+        list[str]: A list of URLs corresponding to the buttons found on the webpage.
     """
     links = []
     
@@ -150,8 +189,18 @@ def get_button_links(driver):
     
     return links
     
-def scrape_box_score(driver, url: str, saved_names):
-    
+def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, str]) -> pd.DataFrame:
+    """
+    Scrapes the box score data from a given URL of box score.
+
+    Args:
+        driver (webdriver.Chrome): The Chrome WebDriver instance.
+        url (str): The URL of the box score page.
+        saved_names (dict[str, str]): A dictionary containing cached player names.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the scraped box score data.
+    """
     wait = WebDriverWait(driver, 10)
     
     driver.get(url)
