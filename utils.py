@@ -4,6 +4,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
 
@@ -85,6 +86,69 @@ def get_teams_and_score(driver):
     
     return away_team_name, home_team_name, winning_team, losing_team, winning_score, losing_score, dual_score, gender
 
+def click_cookie_button(driver):
+    """ Clicks the cookie consent button on the page
+
+    Args:
+        driver (_type_): _description_
+    """
+    
+    try:
+        cookie_button = WebDriverWait(driver, 5).until(
+            EC.element_to_be_clickable((By.CLASS_NAME, "cb-enable"))
+        )
+        cookie_button.click()
+        print("clicked cookie button")
+        # Wait a brief moment for the cookie consent to process the dismissal
+        WebDriverWait(driver, 5).until(EC.invisibility_of_element(cookie_button))
+    except Exception as e:
+        print(f"Error clicking cookie button: {e}")
+
+def click_load_more(driver, num_clicks: int):
+    """ Clicks the "Load More" button on the page
+
+    Args:
+        driver (_type_): _description_
+        num_clicks (_type_): _description_
+    """
+    
+    for i in range(num_clicks):
+    
+        try:
+            wait_time = 10
+            load_more_button = WebDriverWait(driver, wait_time).until(
+            EC.presence_of_element_located((By.XPATH, "//button[@data-testid='PDM-loadMore-onLoadMoreButton']")))
+            WebDriverWait(driver, wait_time).until(EC.element_to_be_clickable((By.XPATH, "//button[@data-testid='PDM-loadMore-onLoadMoreButton']"))
+            )
+            
+            ActionChains(driver).move_to_element(load_more_button).perform()
+            # print('reached')
+            load_more_button.click()
+            print(f"Clicked load more button {i + 1} times") 
+            
+        except Exception as e:
+            # print(f"Error clicking button: {e}")
+            print("done loading")
+
+def get_button_links(driver):
+    """ Stores the links of the buttons on the page
+
+    Args:
+        driver (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    links = []
+    
+    buttons = driver.find_elements(By.CLASS_NAME, 'link_linkCell__jIQoh')
+    
+    for button in buttons:
+        button_url = button.get_attribute('href')
+        links.append(button_url)
+    
+    return links
+    
 def scrape_box_score(driver, url: str):
     
     wait = WebDriverWait(driver, 10)
@@ -100,7 +164,7 @@ def scrape_box_score(driver, url: str):
     away_team_name, home_team_name, winning_team, losing_team, winning_score,\
         losing_score, dual_score, gender = get_teams_and_score(driver)
 
-    wait.until(
+    WebDriverWait(driver, 10).until(
         EC.presence_of_all_elements_located((By.CLASS_NAME, 'tieMatchUp_tieMatchUp__1_Bfm'))
     )
 
