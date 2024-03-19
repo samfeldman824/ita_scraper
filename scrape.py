@@ -17,7 +17,7 @@ CHROME_DRIVER_PATH = '/Users/samfeldman/Downloads/chromedriver-mac-arm64/chromed
 
 driver = initialize_driver(CHROME_DRIVER_PATH)
 
-PAGE_LINK = 'https://colleges.wearecollegetennis.com/Results/Completed?gender=FEMALE&division=DIVISION_1'
+PAGE_LINK = 'https://colleges.wearecollegetennis.com/Results/Completed?gender=MALE&division=DIVISION_1&conference=Ivy_League'
 def scrape_results(driver: webdriver.Chrome, page_url: str) -> pd.DataFrame:
   """
   Scrapes the results from a web page using the provided driver and page URL.
@@ -44,13 +44,13 @@ def scrape_results(driver: webdriver.Chrome, page_url: str) -> pd.DataFrame:
     wait = WebDriverWait(driver, 10)
     wait.until(EC.presence_of_element_located((By.TAG_NAME, "table")))
     click_cookie_button(driver)
-    click_load_more(driver, 4)
+    click_load_more(driver, 1)
     links = get_button_links(driver)
     main_df = pd.DataFrame()
     count = 0
 
     for link in links:
-      if count == 10:
+      if count == -10:
         break
       try:
         df = scrape_box_score(driver, link, saved_names)
@@ -66,7 +66,7 @@ def scrape_results(driver: webdriver.Chrome, page_url: str) -> pd.DataFrame:
     print(f"len saved names: {len(saved_names)}")
 
     with open('saved_names.json', 'w') as f:
-      json.dump(saved_names, f)
+      json.dump(saved_names, f, indent=4)
 
     return main_df
 
@@ -86,6 +86,7 @@ if __name__ == "__main__":
     # with open('saved_names.json', 'r') as f:
     #         saved_names = json.load(f)
     # driver = initialize_driver(CHROME_DRIVER_PATH)
-    # scrape_box_score(driver, 'https://colleges.wearecollegetennis.com/vr?id=EEC765AE-0EAC-40F4-A2B6-749AFEDE93FE&a=Index&c=VenueTeam&s=/scorecard/AEE162B8-05F7-491E-9391-A5C5398EC642', saved_names)
+    # scrape_box_score(driver, 'https://colleges.wearecollegetennis.com/vr?id=12DA963F-DB09-4430-8238-0C5972BD0AAE&a=Index&c=VenueTeam&s=/scorecard/E2FC0807-8A03-4B16-8CA9-0D03148651A9', saved_names)
 # https://colleges.wearecollegetennis.com/vr?id=12DA963F-DB09-4430-8238-0C5972BD0AAE&a=Index&c=VenueTeam&s=/scorecard/E2FC0807-8A03-4B16-8CA9-0D03148651A9
 # https://colleges.wearecollegetennis.com/vr?id=EEC765AE-0EAC-40F4-A2B6-749AFEDE93FE&a=Index&c=VenueTeam&s=/scorecard/AEE162B8-05F7-491E-9391-A5C5398EC642
+# 'https://colleges.wearecollegetennis.com/vr?id=EEC765AE-0EAC-40F4-A2B6-749AFEDE93FE&a=Index&c=VenueTeam&s=/scorecard/AEE162B8-05F7-491E-9391-A5C5398EC642'

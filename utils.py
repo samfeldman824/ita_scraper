@@ -8,6 +8,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
 import json
+from urllib.parse import urlparse, parse_qs
 
 def initialize_driver(chrome_driver_path):
     # Initialize the Chrome driver
@@ -286,9 +287,11 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
 
             for link in name_links:
                 name_link = link.get_attribute("href")
-                short_name = link.text
-                if short_name in cached_names:
-                    full_names.append(cached_names[link.text])
+                parsed_url = urlparse(name_link)
+                player_id = parse_qs(parsed_url.query).get('s', [None])[0][8:]
+                # short_name = link.text
+                if player_id in cached_names:
+                    full_names.append(cached_names[player_id])
                 else:
                     driver.execute_script("window.open('');")
                     driver.switch_to.window(driver.window_handles[-1])
@@ -297,7 +300,7 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
                     full_name = driver.find_element(By.CLASS_NAME, 'teamBanner_playerName__2PcjI').text
                     full_name = ' '.join(full_name.replace('\n', ' ').split())
                     full_names.append(full_name)
-                    cached_names[short_name] = full_name
+                    cached_names[player_id] = full_name
                     driver.close()
                     driver.switch_to.window(original_window)
         
