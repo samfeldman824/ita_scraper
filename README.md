@@ -5,7 +5,7 @@ web scraper that gets match scores from the ITA website
 
 ```
 # creating env with conda
-conda env create -f environment.yml
+conda env create -f environment.yml -n scraper # replace scraper with a different name if wanted
 conda activate scraper
 ```
 
