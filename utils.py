@@ -9,6 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
 import json
 from urllib.parse import urlparse, parse_qs
+import time as time
 
 def initialize_driver(chrome_driver_path):
     # Initialize the Chrome driver
@@ -292,6 +293,9 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
                 # short_name = link.text
                 if player_id in cached_names:
                     full_names.append(cached_names[player_id])
+                elif player_id == 'd8093596-03d5-4c0c-b86b-bd96c90e482d':
+                    print("Tim quit")
+                    full_names.append("Tim Dzhurinskiy")
                 else:
                     driver.execute_script("window.open('');")
                     driver.switch_to.window(driver.window_handles[-1])
