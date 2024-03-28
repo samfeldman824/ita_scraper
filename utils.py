@@ -302,9 +302,6 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
                 # short_name = link.text
                 if player_id in cached_names:
                     full_names.append(cached_names[player_id])
-                elif player_id == 'd8093596-03d5-4c0c-b86b-bd96c90e482d':
-                    print("Tim quit")
-                    full_names.append("Tim Dzhurinskiy")
                 else:
                     driver.execute_script("window.open('');")
                     driver.switch_to.window(driver.window_handles[-1])
@@ -323,10 +320,13 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
             
                 
             if result == "Won" and len(full_names) != 0:
-                if type == "Doubles" :
-                    # pair_names = name.text.split(" /")
-                    winner_name = full_names[0]
-                    winner_partner_name = full_names[1]
+                if type == "Doubles":
+                    try:
+                        winner_name = full_names[0]
+                        winner_partner_name = full_names[1]
+                    except:
+                        continue
+                    
                 else:   
                     winner_name = full_names[0] 
                     
@@ -337,9 +337,11 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
                     
             if result == "Lost" and len(full_names) != 0:
                 if type == "Doubles":
-                    # pair_names = name.text.split(" /")
-                    loser_name = full_names[0]
-                    loser_partner_name = full_names[1]
+                    try:
+                        loser_name = full_names[0]
+                        loser_partner_name = full_names[1]
+                    except:
+                        continue
                 else:   
                     loser_name = full_names[0]
 
