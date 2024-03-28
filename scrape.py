@@ -49,7 +49,17 @@ print(f"Scraping link: {PAGE_LINK}")
 
 driver = initialize_driver(CHROME_DRIVER_PATH)
 
-def scrape_results(driver: webdriver.Chrome, page_url: str) -> pd.DataFrame:
+saved_names = {}
+
+with open('saved_names.json', 'r') as f:
+  saved_names = json.load(f)
+
+num_names_start = len(saved_names)
+
+print(f"len saved names: {len(saved_names)}")
+
+
+def scrape_results(driver: webdriver.Chrome, page_url: str, saved_names: dict) -> pd.DataFrame:
   """
   Scrapes the results from a web page using the provided driver and page URL.
 
@@ -63,12 +73,7 @@ def scrape_results(driver: webdriver.Chrome, page_url: str) -> pd.DataFrame:
   Raises:
     Any exceptions that occur during the scraping process.
   """
-  saved_names = {}
-
-  with open('saved_names.json', 'r') as f:
-    saved_names = json.load(f)
-
-  print(f"len saved names: {len(saved_names)}")
+  
 
   
 
@@ -81,8 +86,14 @@ def scrape_results(driver: webdriver.Chrome, page_url: str) -> pd.DataFrame:
     links = get_button_links(driver)
     main_df = pd.DataFrame()
     count = 1
+    num_success = 0
+    num_failed = 0
 
+    links = links[0:10]
+
+    
     # links = [
+      # 'https://colleges.wearecollegetennis.com/vr?id=C22FC68C-0780-446B-AD46-EB2C49901F5D&a=Index&c=VenueTeam&s=/scorecard/A89D820C-ED58-464F-A495-5F4B0A052E98',
     # 'https://colleges.wearecollegetennis.com/vr?id=0CDD94A1-39FE-44AE-A9BC-CDB1A87D6F32&a=Index&c=VenueTeam&s=/scorecard/3000ED76-044E-4830-A62E-9B0874493CF5',
     # 'https://colleges.wearecollegetennis.com/vr?id=12DA963F-DB09-4430-8238-0C5972BD0AAE&a=Index&c=VenueTeam&s=/scorecard/E2FC0807-8A03-4B16-8CA9-0D03148651A9',
     # 'https://colleges.wearecollegetennis.com/vr?id=EEC765AE-0EAC-40F4-A2B6-749AFEDE93FE&a=Index&c=VenueTeam&s=/scorecard/AEE162B8-05F7-491E-9391-A5C5398EC642',
@@ -108,6 +119,7 @@ def scrape_results(driver: webdriver.Chrome, page_url: str) -> pd.DataFrame:
     
     print(f"len links: {len(links)}")
     
+    
     for link in links:
       
       # agent = random.choice(user_agents)
@@ -130,10 +142,12 @@ def scrape_results(driver: webdriver.Chrome, page_url: str) -> pd.DataFrame:
         main_df = pd.concat([main_df, df], ignore_index=True)
         print(f"Scraped {count} of {len(links)}")
         print(len(saved_names))
+        num_success += 1
         
       except Exception as e:
         print(f"Error on {link}")
         print(e)
+        num_failed += 1
         continue
       
       finally:
@@ -143,6 +157,10 @@ def scrape_results(driver: webdriver.Chrome, page_url: str) -> pd.DataFrame:
     with open('saved_names.json', 'w') as f:
       json.dump(saved_names, f, indent=4)
 
+    print(f"Success: {num_success}")
+    print(f"Failed: {num_failed}")
+
+
     return main_df
 
 
@@ -150,10 +168,12 @@ def main():
     start = time.time()
     
 
-    results_df = scrape_results(CHROME_DRIVER_PATH, PAGE_LINK)
-    # results_df = scrape_results(CHROME_DRIVER_PATH, BASE_URL)
+    results_df = scrape_results(CHROME_DRIVER_PATH, PAGE_LINK, saved_names)
     results_df.to_excel('output.xlsx', index=False)
     end = time.time()
+    
+    num_names_end = len(saved_names)
+    print(f"names added: {num_names_end - num_names_start}")
     
     print(f"Time elapsed: {end - start:.2f} seconds")
 
