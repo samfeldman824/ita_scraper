@@ -10,6 +10,15 @@ import pandas as pd
 import json
 from urllib.parse import urlparse, parse_qs
 import time as time
+import configparser
+
+
+
+def read_config():
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    return config
+
 
 def initialize_driver(chrome_driver_path):
     # Initialize the Chrome driver
@@ -469,4 +478,10 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
     
     return df
 
-    
+division_dict = {
+    '1': 'DIVISION_1',
+    '2': 'DIVISION_2',
+    '3': 'DIVISION_3',
+    'naia': 'NAIA',
+    'juco': 'NJCAA',
+}    
