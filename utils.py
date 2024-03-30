@@ -11,7 +11,8 @@ import json
 from urllib.parse import urlparse, parse_qs
 import time as time
 import configparser
-
+from icecream import ic
+import contextlib
 
 
 def read_config():
@@ -25,6 +26,8 @@ def initialize_driver(chrome_driver_path):
     
     service = Service(executable_path=chrome_driver_path)
     options = webdriver.ChromeOptions()
+    options.add_argument("--headless")
+    options.add_argument("window-size=1920,1080")
     driver = webdriver.Chrome(service=service, options=options)
     
     return driver
@@ -126,7 +129,7 @@ def get_teams_and_score(driver: webdriver.Chrome) -> tuple[str, str, str, str, i
         gender = "Male"
     if away_team_name[len(away_team_name) - 3:] == "(W)":
         gender = "Female" 
-    print(f"Gender: {gender}")    
+    ic(gender)
     print()
     
     return away_team_name, home_team_name, winning_team, losing_team, winning_score, losing_score, dual_score, gender
@@ -192,7 +195,10 @@ def get_button_links(driver: webdriver.Chrome) -> list[str]:
     """
     links = []
     
-    buttons = driver.find_elements(By.CLASS_NAME, 'link_linkCell__jIQoh')
+    wait = WebDriverWait(driver, 10)
+    buttons = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'link_linkCell__jIQoh')))
+
+    # buttons = driver.find_elements(By.CLASS_NAME, 'link_linkCell__jIQoh')
     
     for button in buttons:
         button_url = button.get_attribute('href')
@@ -212,7 +218,7 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
     Returns:
         pd.DataFrame: A DataFrame containing the scraped box score data.
     """
-    wait = WebDriverWait(driver, 10)
+    wait = WebDriverWait(driver, 2)
     
     driver.get(url)
 
@@ -220,7 +226,7 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
 
     formatted_date = get_date(driver)
     
-    print(formatted_date)
+    ic(formatted_date)
 
     away_team_name, home_team_name, winning_team, losing_team, winning_score,\
         losing_score, dual_score, gender = get_teams_and_score(driver)
@@ -231,8 +237,8 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
 
     match_divs = driver.find_elements(By.CLASS_NAME, 'tieMatchUp_tieMatchUp__1_Bfm')
 
-    cached_names = saved_names
-
+    cached_names = saved_names 
+    
     for match in match_divs:
         info = match.find_element(By.TAG_NAME, "h3").text
         line = info.split(" ")[0]
@@ -296,6 +302,7 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
             
 
             for link in name_links:
+                short_name = link.text
                 name_link = link.get_attribute("href")
                 parsed_url = urlparse(name_link)
                 player_id = parse_qs(parsed_url.query).get('s', [None])[0][8:]
@@ -305,15 +312,22 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
                 else:
                     driver.execute_script("window.open('');")
                     driver.switch_to.window(driver.window_handles[-1])
-                    driver.get(name_link)
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'teamBanner_playerName__2PcjI'))) 
-                    full_name = driver.find_element(By.CLASS_NAME, 'teamBanner_playerName__2PcjI').text
-                    full_name = ' '.join(full_name.replace('\n', ' ').split())
-                    full_names.append(full_name)
-                    cached_names[player_id] = full_name
+                    
+                    try:
+                        driver.get(name_link)
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'teamBanner_playerName__2PcjI'))) 
+                        full_name = driver.find_element(By.CLASS_NAME, 'teamBanner_playerName__2PcjI').text
+                        full_name = ' '.join(full_name.replace('\n', ' ').split())
+                        full_names.append(full_name)
+                        cached_names[player_id] = full_name
+                    except:
+                        full_names.append(short_name)
+                        cached_names[player_id] = short_name
+                    
                     driver.close()
                     driver.switch_to.window(original_window)
-        
+                        
+                    
                 
             # driver.back()
             # driver.get(url)

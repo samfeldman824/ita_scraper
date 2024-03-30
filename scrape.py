@@ -12,6 +12,9 @@ import json
 import requests
 import random
 import argparse
+from icecream import ic
+
+ic.configureOutput(prefix='')
 
 config = read_config()
 
@@ -45,9 +48,15 @@ if url_params:
 
 PAGE_LINK = url
 print()
-print(f"Scraping link: {PAGE_LINK}")
+# print(f"Scraping link: {PAGE_LINK}")
+ic(PAGE_LINK)
+# driver = initialize_driver(CHROME_DRIVER_PATH)
 
-driver = initialize_driver(CHROME_DRIVER_PATH)
+# service = Service(executable_path=CHROME_DRIVER_PATH)
+# options = webdriver.ChromeOptions()
+# driver = webdriver.Chrome(service=service, options=options)
+    
+
 
 saved_names = {}
 
@@ -56,10 +65,9 @@ with open('saved_names.json', 'r') as f:
 
 num_names_start = len(saved_names)
 
-print(f"len saved names: {len(saved_names)}")
+ic(len(saved_names))
 
-
-def scrape_results(driver: webdriver.Chrome, page_url: str, saved_names: dict) -> pd.DataFrame:
+def scrape_results(driver_path: str, page_url: str, saved_names: dict) -> pd.DataFrame:
   """
   Scrapes the results from a web page using the provided driver and page URL.
 
@@ -68,7 +76,7 @@ def scrape_results(driver: webdriver.Chrome, page_url: str, saved_names: dict) -
     page_url: The URL of the web page to scrape.
 
   Returns:
-    A pandas DataFrame containing the scraped data.
+    A pandas DataFrame containing the scraped data. 
 
   Raises:
     Any exceptions that occur during the scraping process.
@@ -77,30 +85,33 @@ def scrape_results(driver: webdriver.Chrome, page_url: str, saved_names: dict) -
 
   
 
-  with initialize_driver('/Users/samfeldman/Downloads/chromedriver-mac-arm64/chromedriver') as driver:
+  with initialize_driver(driver_path) as driver:
     driver.get(page_url)
+    driver.set_window_position(0, 0)
     wait = WebDriverWait(driver, 10)
     wait.until(EC.presence_of_element_located((By.TAG_NAME, "table")))
     click_cookie_button(driver)
-    click_load_more(driver, 1)
+    click_load_more(driver, 3)
     links = get_button_links(driver)
     main_df = pd.DataFrame()
     count = 1
     num_success = 0
     num_failed = 0
-
-    links = links[0:10]
+    # links = links[0:44]
 
     
-    links = [
-      'https://colleges.wearecollegetennis.com/DoaneUniversityM/Team/scorecard/AB9374DF-D627-424E-A44C-11744013465B'
+    # links = [
+      # 'https://colleges.wearecollegetennis.com/vr?id=C7CA88A5-8AC0-4476-9AF9-C93D9C2DD777&a=Index&c=VenueTeam&s=/scorecard/8917DFD2-0A98-4255-A7B8-540F544ABDD2',
+      # 'https://colleges.wearecollegetennis.com/vr?id=C9CA8B99-867B-4C0F-A57E-3445EF22D5A6&a=Index&c=VenueTeam&s=/scorecard/8A58A946-BD9B-4DE7-BAF0-DF4D63D87A53'
+    #   'https://colleges.wearecollegetennis.com/AmericanRiverCollegeW/Team/scorecard/42B30D0C-129B-423D-A26C-EE8933B679FE'
+      # 'https://colleges.wearecollegetennis.com/DoaneUniversityM/Team/scorecard/AB9374DF-D627-424E-A44C-11744013465B'
       # 'https://colleges.wearecollegetennis.com/vr?id=C22FC68C-0780-446B-AD46-EB2C49901F5D&a=Index&c=VenueTeam&s=/scorecard/A89D820C-ED58-464F-A495-5F4B0A052E98',
     # 'https://colleges.wearecollegetennis.com/vr?id=0CDD94A1-39FE-44AE-A9BC-CDB1A87D6F32&a=Index&c=VenueTeam&s=/scorecard/3000ED76-044E-4830-A62E-9B0874493CF5',
     # 'https://colleges.wearecollegetennis.com/vr?id=12DA963F-DB09-4430-8238-0C5972BD0AAE&a=Index&c=VenueTeam&s=/scorecard/E2FC0807-8A03-4B16-8CA9-0D03148651A9',
     # 'https://colleges.wearecollegetennis.com/vr?id=EEC765AE-0EAC-40F4-A2B6-749AFEDE93FE&a=Index&c=VenueTeam&s=/scorecard/AEE162B8-05F7-491E-9391-A5C5398EC642',
     # 'https://colleges.wearecollegetennis.com/vr?id=85B89882-F2B1-4BDC-A1F2-4CEE0C1AD6CD&a=Index&c=VenueTeam&s=/scorecard/32230C17-52D7-413E-A13B-137EF0A5B3B1',
     # 'https://colleges.wearecollegetennis.com/OldDominionUniversityM/Team/scorecard/CD56CA4B-69F6-4F81-B535-0A57D2412DB3'
-    ]
+    # ]
 
 
     # proxy_file_path = 'valid_proxies.txt'
@@ -117,10 +128,9 @@ def scrape_results(driver: webdriver.Chrome, page_url: str, saved_names: dict) -
     
     
 
+    ic(len(links)) 
     
-    print(f"len links: {len(links)}")
-    
-    
+    error_links = []
     for link in links:
       
       # agent = random.choice(user_agents)
@@ -135,48 +145,57 @@ def scrape_results(driver: webdriver.Chrome, page_url: str, saved_names: dict) -
       
       # if count == -10:
       #   break
-      
       print(f"Scraping {count} of {len(links)}")
       try:
         # df = scrape_box_score(new_driver, link, saved_names)
         df = scrape_box_score(driver, link, saved_names)
         main_df = pd.concat([main_df, df], ignore_index=True)
         print(f"Scraped {count} of {len(links)}")
-        print(len(saved_names))
+        ic(len(saved_names))
         num_success += 1
         
       except Exception as e:
         print(f"Error on {link}")
         print(e)
         num_failed += 1
+        error_links.append(link)
         continue
       
       finally:
         count += 1
-    print(f"len saved names: {len(saved_names)}")
-
+    
+    ic(len(saved_names))
     with open('saved_names.json', 'w') as f:
       json.dump(saved_names, f, indent=4)
-
-    print(f"Success: {num_success}")
-    print(f"Failed: {num_failed}")
-
+    ic(num_success)
+    ic(num_failed)
+    # print(f"Success: {num_success}")
+    # print(f"Failed: {num_failed}")
+    if error_links:
+      print("Failed Links:")
+      for link in error_links:
+        print(link)
+      
+    
 
     return main_df
 
 
 def main():
-    start = time.time()
-    
+  start = time.time()
+  
 
-    results_df = scrape_results(CHROME_DRIVER_PATH, PAGE_LINK, saved_names)
-    results_df.to_excel('output.xlsx', index=False)
-    end = time.time()
-    
-    num_names_end = len(saved_names)
-    print(f"names added: {num_names_end - num_names_start}")
-    
-    print(f"Time elapsed: {end - start:.2f} seconds")
+  results_df = scrape_results(CHROME_DRIVER_PATH, PAGE_LINK, saved_names)
+  results_df.to_excel('output.xlsx', index=False)
+  end = time.time()
+  
+  num_names_end = len(saved_names)
+  names_added = num_names_end - num_names_start
+  ic(names_added)
+  
+  execution_time = "{:.2f}".format(end - start) + " seconds"
+   
+  ic(execution_time)
 
 if __name__ == "__main__":
     main()
