@@ -13,6 +13,7 @@ import time as time
 import configparser
 from icecream import ic
 import contextlib
+import random
 
 
 def read_config():
@@ -21,13 +22,28 @@ def read_config():
     return config
 
 
-def initialize_driver(chrome_driver_path):
+def initialize_driver():
     # Initialize the Chrome driver
-    
+    config = read_config()
+    chrome_driver_path = config['Setup']['chrome_driver_path']
+
+    user_agents = [
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.96 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.96 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.96 Safari/537.36',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36',
+    ] 
+     
     service = Service(executable_path=chrome_driver_path)
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
     options.add_argument("window-size=1920,1080")
+    options.add_argument(f"user-agent={random.choice(user_agents)}")
     driver = webdriver.Chrome(service=service, options=options)
     
     return driver
@@ -54,7 +70,7 @@ def get_date(driver: webdriver.Chrome) -> str:
     Returns:
         A formatted date string in the format mm/dd/yyyy.
     """
-    WebDriverWait(driver, 10).until(
+    WebDriverWait(driver, 2).until(
         EC.presence_of_all_elements_located((By.CLASS_NAME, 'boxDetails_boxDetails__2vQeJ'))
     )
 
@@ -223,7 +239,7 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
     driver.get(url)
 
     excel_data = []
-
+    
     formatted_date = get_date(driver)
     
     ic(formatted_date)
@@ -231,7 +247,7 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
     away_team_name, home_team_name, winning_team, losing_team, winning_score,\
         losing_score, dual_score, gender = get_teams_and_score(driver)
 
-    WebDriverWait(driver, 10).until(
+    WebDriverWait(driver, 2).until(
         EC.presence_of_all_elements_located((By.CLASS_NAME, 'tieMatchUp_tieMatchUp__1_Bfm'))
     )
 
@@ -300,7 +316,6 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
             name_links = name.find_elements(By.TAG_NAME, "a")
             
             
-
             for link in name_links:
                 short_name = link.text
                 name_link = link.get_attribute("href")
