@@ -60,7 +60,7 @@ def find_links(page_link, num_clicks):
   driver = initialize_driver()
   driver.get(page_link)
   WebDriverWait(driver, 2).until(EC.presence_of_element_located((By.TAG_NAME, "table")))
-  click_cookie_button(driver)
+  # click_cookie_button(driver)
   click_load_more(driver, num_clicks)
   links = get_button_links(driver)
   return links

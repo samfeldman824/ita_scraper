@@ -71,10 +71,10 @@ def get_date(driver: webdriver.Chrome) -> str:
         A formatted date string in the format mm/dd/yyyy.
     """
     WebDriverWait(driver, 2).until(
-        EC.presence_of_all_elements_located((By.CLASS_NAME, 'boxDetails_boxDetails__2vQeJ'))
+        EC.presence_of_all_elements_located((By.CLASS_NAME, 'boxDetails_boxDetails__2dpw_'))
     )
 
-    date_div = driver.find_element(By.CLASS_NAME, 'boxDetails_boxDetails__2vQeJ')
+    date_div = driver.find_element(By.CLASS_NAME, 'boxDetails_boxDetails__2dpw_')
 
     date_string = date_div.find_element(By.TAG_NAME, "time").text
     date_part = date_string.split(" / ")[0]
@@ -109,20 +109,20 @@ def get_teams_and_score(driver: webdriver.Chrome) -> tuple[str, str, str, str, i
     """
     wait = WebDriverWait(driver, 10)
     
-    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'boxDetails_teamName__1OFCB')))
+    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'boxDetails_team__2bSob')))
 
     # away boxDetails_teamName__1OFCB 
     # home boxDetails_team__1OjSB
 
-    teams = driver.find_elements(By.CLASS_NAME, 'boxDetails_teamName__1OFCB')
+    teams = driver.find_elements(By.CLASS_NAME, 'boxDetails_team__2bSob')
 
     away_team_name = teams[0].find_element(By.TAG_NAME, "h2").text
     home_team_name = teams[1].find_element(By.TAG_NAME, "h2").text
 
     # away boxDetails_awayScore__39mL_
-    away_team_score = int(driver.find_element(By.CLASS_NAME, 'boxDetails_awayScore__39mL_').text)
+    away_team_score = int(driver.find_element(By.CLASS_NAME, 'boxDetails_awayScore__2GSN-').text)
     # home boxDetails_homeScore__24V0P
-    home_team_score = int(driver.find_element(By.CLASS_NAME, 'boxDetails_homeScore__24V0P').text)
+    home_team_score = int(driver.find_element(By.CLASS_NAME, 'boxDetails_homeScore__2tbNy').text)
 
     if away_team_score > home_team_score:
         winning_team = away_team_name
@@ -163,6 +163,7 @@ def click_cookie_button(driver: webdriver.Chrome) -> None:
     Returns:
         None
     """
+    # osano-cm-manage button class for manage preferences
     try:
         cookie_button = WebDriverWait(driver, 5).until(
             EC.element_to_be_clickable((By.CLASS_NAME, "cb-enable"))
@@ -248,10 +249,10 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
         losing_score, dual_score, gender = get_teams_and_score(driver)
 
     WebDriverWait(driver, 2).until(
-        EC.presence_of_all_elements_located((By.CLASS_NAME, 'tieMatchUp_tieMatchUp__1_Bfm'))
+        EC.presence_of_all_elements_located((By.CLASS_NAME, 'tieMatchUp_tieMatchUp__2tiv0'))
     )
 
-    match_divs = driver.find_elements(By.CLASS_NAME, 'tieMatchUp_tieMatchUp__1_Bfm')
+    match_divs = driver.find_elements(By.CLASS_NAME, 'tieMatchUp_tieMatchUp__2tiv0')
 
     cached_names = saved_names 
     
@@ -268,7 +269,7 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
         loser_partner_name = "" 
         loser_college = "" 
         
-        players = match.find_elements(By.CLASS_NAME, 'tieMatchUp_side__3iIKA')
+        players = match.find_elements(By.CLASS_NAME, 'tieMatchUp_side__EmIHe')
         winning_player_score = []
         losing_player_score = []
         
@@ -290,13 +291,13 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
             for player_div in player_divs:
                 classes = player_div.get_attribute("class").split()
 
-                if "tieMatchUp_flag__4biXR" in classes:
+                if "tieMatchUp_flag__2Z23m" in classes:
                     flag_type = player_div.find_element(By.TAG_NAME, "abbr").text
                     if flag_type == "W/O":
                         result = "Walkover"
                     if flag_type == "DEF":
                         result = "Default"
-                if "tieMatchUp_winnerIcon__CTmd5" in classes:
+                if "tieMatchUp_winnerIcon__Y3wof" in classes:
                     result = "Won"
                 # if "tieMatchUp_flag__4biXR" in classes:
                 #     result = ""
@@ -309,7 +310,7 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
             
             original_window = driver.current_window_handle 
             
-            name = player.find_element(By.CLASS_NAME, 'tieMatchUp_name__1lTsZ')
+            name = player.find_element(By.CLASS_NAME, 'tieMatchUp_name__38vwK')
         
             full_names = [] 
         
@@ -330,8 +331,8 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
                     
                     try:
                         driver.get(name_link)
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'teamBanner_playerName__2PcjI'))) 
-                        full_name = driver.find_element(By.CLASS_NAME, 'teamBanner_playerName__2PcjI').text
+                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'teamBanner_playerName__3t6Mj'))) 
+                        full_name = driver.find_element(By.CLASS_NAME, 'teamBanner_playerName__3t6Mj').text
                         full_name = ' '.join(full_name.replace('\n', ' ').split())
                         full_names.append(full_name)
                         cached_names[player_id] = full_name
@@ -383,9 +384,9 @@ def scrape_box_score(driver: webdriver.Chrome, url: str, saved_names: dict[str, 
             # 
             # tieMatchUp_winnerIcon__CTmd5
             wait.until(
-                EC.presence_of_all_elements_located((By.CLASS_NAME, 'tieMatchUp_score__2WkUA'))
+                EC.presence_of_all_elements_located((By.CLASS_NAME, 'tieMatchUp_score__22eNa'))
             )
-            score = player.find_elements(By.CLASS_NAME, 'tieMatchUp_score__2WkUA')
+            score = player.find_elements(By.CLASS_NAME, 'tieMatchUp_score__22eNa')
             games_score = ''
             for s in score:
                 set_score = ""
